@@ -8,31 +8,20 @@ import 'package:login_signup/google_signin.dart';
 import 'package:login_signup/models/user_model.dart';
 import 'package:provider/provider.dart';
 
-import 'LoginPage.dart';
 
-
-
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+class ProfilePage2 extends StatefulWidget {
+  const ProfilePage2({Key? key}) : super(key: key);
 
   @override
-  _ProfilePageState createState() => _ProfilePageState();
+  _ProfilePage2State createState() => _ProfilePage2State();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePage2State extends State<ProfilePage2> {
+
+
+  final user = FirebaseAuth.instance.currentUser!;
+
   @override
-  User? user = FirebaseAuth.instance.currentUser;
-  UserModel loggedinuser = UserModel();
-  void initState(){
-    super.initState();
-    FirebaseFirestore.instance.collection("users").doc(user!.uid).get().then((value){
-      this.loggedinuser = UserModel.fromMap(value.data());
-      setState((){});
-
-      });
-  }
-
-
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -47,10 +36,10 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
 
             Text(
-              "Welcome ${loggedinuser.firstname } ${loggedinuser.lastname}",
+              "Welcome ${user.displayName}",
               textScaleFactor: 2,
               style:
-                  TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+              TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
             ),
             const SizedBox(
               height: 20,
@@ -64,7 +53,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 children:[
                   Expanded(
                     child: CircleAvatar(
-                      backgroundImage: NetworkImage("https://pbs.twimg.com/media/Eu7e3mQVgAImK2o?format=png&name=large"),
+                      backgroundImage: NetworkImage(user.photoURL!),
                       backgroundColor: Colors.white,
                     ),
                   )
@@ -85,52 +74,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   backgroundColor: Colors.deepPurple,
                 ),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ChangePassword()),
-                  );
+                  final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
+                  provider.signOutGoogle(context);
 
-
-                },
-                child: Row(
-                  children: const [
-                    SizedBox(width: 20),
-                    Expanded(
-                      child: Text(
-                        "Change Password",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.all(20),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
-                  backgroundColor: Colors.deepPurple,
-                ),
-                onPressed: () {
-                  FirebaseAuth.instance.signOut().then((value) {
-                    print("Signed Out");
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const LoginPage()),
-                    );
-                  });
 
                 },
                 child: Row(
@@ -150,6 +96,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
+
           ],
         ),
       ),

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,8 @@ import 'package:login_signup/SignupPage.dart';
 import 'package:login_signup/google_signin.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import 'models/user_model.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -19,13 +22,16 @@ class _LoginPageState extends State<LoginPage> {
   final email_controller = TextEditingController();
   final password_controller = TextEditingController();
   final _formkey = GlobalKey<FormState>();
+
   @override
   void dispose() {
     email_controller.dispose();
     password_controller.dispose();
     super.dispose();
   }
- final _auth = FirebaseAuth.instance;
+
+  final _auth = FirebaseAuth.instance;
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -52,7 +58,8 @@ class _LoginPageState extends State<LoginPage> {
                   height: 10,
                 ),
 
-                const Text("Complete the details or continue with social media "),
+                const Text(
+                    "Complete the details or continue with social media "),
 
                 const SizedBox(
                   height: 50,
@@ -76,7 +83,8 @@ class _LoginPageState extends State<LoginPage> {
                       if (value!.isEmpty) {
                         return "Please Enter Your Email";
                       }
-                      if(!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]").hasMatch(value)){
+                      if (!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]")
+                          .hasMatch(value)) {
                         return "Please Enter a valid email";
                       }
                       return null;
@@ -105,19 +113,16 @@ class _LoginPageState extends State<LoginPage> {
                         gapPadding: 10,
                       ),
                     ),
-                    validator: (value) {
-                      RegExp regex = new RegExp(r'^.{6,}$');
+                    validator:(value) {
                       if (value!.isEmpty) {
                         return "Password is required for login";
-                      }
-                      if (!regex.hasMatch(value)){
-                        return "Please Enter Valid Password(Min. 6 Character)";
                       }
                       return null;
                     },
                     onChanged: (text) {
                       password_controller.text = text;
-                    }),
+                    }
+                    ),
 
                 const SizedBox(
                   height: 30,
@@ -128,12 +133,9 @@ class _LoginPageState extends State<LoginPage> {
                   child: ElevatedButton(
                       child: const Text("Login"),
                       onPressed: () {
-
-                           Signin();
-
-
-                        }
-                      ),
+                        Signin();
+                      }
+                  ),
                 ),
 
                 // const SizedBox(
@@ -161,11 +163,10 @@ class _LoginPageState extends State<LoginPage> {
                     TextButton(
                       onPressed: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const SignupPage()),
-                          );
-
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SignupPage()),
+                        );
                       },
                       child: const Text("Signup", textScaleFactor: 1.2),
                     ),
@@ -180,19 +181,16 @@ class _LoginPageState extends State<LoginPage> {
                     primary: Colors.deepPurple,
                     onPrimary: Colors.white,
                   ),
-                  icon: const FaIcon(FontAwesomeIcons.google, color: Colors.red),
+                  icon: const FaIcon(
+                      FontAwesomeIcons.google, color: Colors.red),
                   label: const Text("Signup with Google"),
                   onPressed: () {
-                    final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
+                    final provider = Provider.of<GoogleSignInProvider>(
+                        context, listen: false);
+                    provider.googleLogin(context);
 
-                    provider.googleLogin();
                   },
                 ),
-
-                // const CircleAvatar(
-                //   backgroundColor: Colors.white,
-                //   backgroundImage: AssetImage("assets/images/google.png"),
-                // )
               ],
             ),
           ),
@@ -202,20 +200,28 @@ class _LoginPageState extends State<LoginPage> {
   }
 
 
-void Signin() async {
-  if (_formkey.currentState!.validate()) {
-    await _auth.signInWithEmailAndPassword(
-        email: email_controller.text, password: password_controller.text).then((uid) {
-          Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => const ProfilePage()),
-      ).catchError((error){
-         Fluttertoast.showToast(msg: error!.toString());
+  void Signin() async {
+    if (_formkey.currentState!.validate()) {
+      await _auth.signInWithEmailAndPassword(
+          email: email_controller.text, password: password_controller.text)
+          .then((uid) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const ProfilePage()),
+        ).catchError((error) {
+          final snackBar = SnackBar(
+            content: Text("yes"),
+            action: SnackBarAction(
+              label: 'Undo',
+              onPressed: () {
+                // Some code to undo the change.
+              },
+            ),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        });
       });
-
-      });
-
+    }
   }
- }
 }

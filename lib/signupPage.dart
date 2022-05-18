@@ -100,7 +100,7 @@ class _SignupPageState extends State<SignupPage> {
                         return "Please Enter Your Password";
                       }
                       if (!regex.hasMatch(value)){
-                        return "Please Enter Valid Password(Min. 6 Character";
+                        return "Please Enter Valid Password(Min. 6 Character)";
                       }
                       return null;
                     },

@@ -1,12 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:login_signup/profile_page.dart';
 import 'loginPage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'models/user_model.dart';
 
 class SignupPage2 extends StatefulWidget {
   final String email;
   final String password;
-  const SignupPage2({Key? key, required this.email,required this.password}) : super(key: key);
+  const SignupPage2({required this.email, required this.password});
+
 
   @override
   _SignupPage2State createState() => _SignupPage2State();
@@ -27,6 +32,7 @@ class _SignupPage2State extends State<SignupPage2> {
     address_controller.dispose();
     super.dispose();
   }
+  final _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -161,30 +167,7 @@ class _SignupPage2State extends State<SignupPage2> {
                   width: 200,
                   child: ElevatedButton(
                     onPressed: () {
-                      if (_formkey.currentState!.validate()) {
-                        showDialog<String>(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (BuildContext context) => AlertDialog(
-                            content: const Text('Registration Successful'),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                          const LoginPage()),
-                                    );
-                                  });
-                                },
-                                child: const Text('Ok'),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
+                          signUp();
                     },
                     child: const Text('Register'),
                   ),
@@ -200,19 +183,12 @@ class _SignupPage2State extends State<SignupPage2> {
                     const Text("Already have an account? "),
                     TextButton(
                       onPressed: () {
-                        FirebaseAuth.instance
-                            .createUserWithEmailAndPassword(
-                            email: widget.email , password: widget.password)
-                            .then((value) {
-                          print("Created new Account");
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => const LoginPage()),
                           );
-                        }).onError((error, stackTrace) {
-                          print(error.toString());
-                        });
+
 
                       },
                       child: const Text("Login", textScaleFactor: 1.2),
@@ -226,4 +202,40 @@ class _SignupPage2State extends State<SignupPage2> {
       ),
     );
   }
+  void signUp() async{
+
+     if (_formkey.currentState!.validate()) {
+       await _auth.createUserWithEmailAndPassword(email: widget.email, password:widget.password).then((value) => {
+        postDetailsToFirestore()
+       }).catchError((e){
+         Fluttertoast.showToast(msg: e!.toString());
+       });
+
+     }
+  }
+
+  postDetailsToFirestore() async{
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+    User? user = _auth.currentUser;
+    UserModel userModel= UserModel();
+
+    userModel.email= user!.email;
+    userModel.uid = user.uid;
+    userModel.firstname= FName_controller.text.trim();
+    userModel.lastname = LName_controller.text.trim();
+    userModel.phone = phone_controller.text.trim();
+    userModel.address = address_controller.text.trim();
+
+    await firebaseFirestore.collection("users").doc(user.uid).set(userModel.toMap());
+
+    Fluttertoast.showToast(msg: "Account created Successfully");
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+          builder: (context) =>
+          const ProfilePage()),
+        (route) => false);
+  }
+
 }

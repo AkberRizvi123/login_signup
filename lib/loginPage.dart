@@ -39,6 +39,9 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                SizedBox(
+                  height: 20,
+                ),
                 const Text(
                   "Login",
                   textScaleFactor: 2,
@@ -108,7 +111,7 @@ class _LoginPageState extends State<LoginPage> {
                         return "Password is required for login";
                       }
                       if (!regex.hasMatch(value)){
-                        return "Please Enter Valid Password(Min. 6 Character";
+                        return "Please Enter Valid Password(Min. 6 Character)";
                       }
                       return null;
                     },
@@ -125,10 +128,10 @@ class _LoginPageState extends State<LoginPage> {
                   child: ElevatedButton(
                       child: const Text("Login"),
                       onPressed: () {
-                        setState(() {
+
                            Signin();
 
-                          });
+
                         }
                       ),
                 ),
@@ -157,9 +160,7 @@ class _LoginPageState extends State<LoginPage> {
                     const Text("Don't have an account? "),
                     TextButton(
                       onPressed: () {
-
-
-                          Navigator.push(
+                        Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => const SignupPage()),
@@ -182,8 +183,8 @@ class _LoginPageState extends State<LoginPage> {
                   icon: const FaIcon(FontAwesomeIcons.google, color: Colors.red),
                   label: const Text("Signup with Google"),
                   onPressed: () {
-                    final provider =
-                    Provider.of<GoogleSignInProvider>(context, listen: false);
+                    final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
+
                     provider.googleLogin();
                   },
                 ),
@@ -204,18 +205,17 @@ class _LoginPageState extends State<LoginPage> {
 void Signin() async {
   if (_formkey.currentState!.validate()) {
     await _auth.signInWithEmailAndPassword(
-        email: email_controller.text, password: password_controller.text).then((
-        uid) {
-      Fluttertoast.showToast(msg: "Login Successful");
-      Navigator.push(
+        email: email_controller.text, password: password_controller.text).then((uid) {
+          Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => const ProfilePage()),
-      ).onError((e, stackTrace) {
-        Fluttertoast.showToast(msg: e!.toString());
-        print(e.toString());
+      ).catchError((error){
+         Fluttertoast.showToast(msg: error!.toString());
       });
-    });
+
+      });
+
   }
  }
 }
